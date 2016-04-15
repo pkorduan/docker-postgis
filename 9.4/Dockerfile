@@ -1,4 +1,4 @@
-FROM mdillon/postgis:latest
+FROM mdillon/postgis:${PG_MAJOR}
 MAINTAINER Peter Korduan <peter.korduan@gdi-service.de>
 
 ENV ORACLE_MAJOR 12.1
