@@ -9,19 +9,19 @@ RUN apt-get update && apt-get install -y \
   alien \
   zip
 
-ADD oracle/oracle-instantclient${ORACLE_MAJOR}-basic-${ORACLE_VERSION}.x86_64.rpm /tmp
-ADD oracle/oracle-instantclient${ORACLE_MAJOR}-sqlplus-${ORACLE_VERSION}.x86_64.rpm /tmp
-ADD oracle/oracle-instantclient${ORACLE_MAJOR}-jdbc-${ORACLE_VERSION}.x86_64.rpm /tmp
-ADD oracle/oracle-instantclient${ORACLE_MAJOR}-devel-${ORACLE_VERSION}.x86_64.rpm /tmp
-
-ADD https://github.com/laurenz/oracle_fdw/archive/master.zip /tmp/oracle_fdw.zip
-
 WORKDIR /tmp
+
+COPY oracle/oracle-instantclient${ORACLE_MAJOR}-basic-${ORACLE_VERSION}.x86_64.rpm \
+     oracle/oracle-instantclient${ORACLE_MAJOR}-sqlplus-${ORACLE_VERSION}.x86_64.rpm \
+     oracle/oracle-instantclient${ORACLE_MAJOR}-jdbc-${ORACLE_VERSION}.x86_64.rpm \
+     oracle/oracle-instantclient${ORACLE_MAJOR}-devel-${ORACLE_VERSION}.x86_64.rpm ./
 
 RUN alien -i oracle-instantclient${ORACLE_MAJOR}-basic-${ORACLE_VERSION}.x86_64.rpm && \
     alien -i  oracle-instantclient${ORACLE_MAJOR}-sqlplus-${ORACLE_VERSION}.x86_64.rpm && \
     alien -i  oracle-instantclient${ORACLE_MAJOR}-jdbc-${ORACLE_VERSION}.x86_64.rpm && \
     alien -i  oracle-instantclient${ORACLE_MAJOR}-devel-${ORACLE_VERSION}.x86_64.rpm
+
+ADD https://github.com/laurenz/oracle_fdw/archive/master.zip ./oracle_fdw.zip
 
 RUN unzip -q oracle_fdw.zip
 
