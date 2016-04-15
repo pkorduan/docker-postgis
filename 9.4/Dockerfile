@@ -5,7 +5,7 @@ ENV ORACLE_MAJOR 12.1
 ENV ORACLE_VERSION 12.1.0.2.0-1
 
 RUN apt-get update && apt-get install -y \
-  postgresql-server-dev-${PG_MAJOR} \
+  postgresql-server-dev-9.4 \
   alien \
   zip
 
