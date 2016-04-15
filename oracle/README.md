@@ -13,6 +13,6 @@ oracle-instantclient12.1-sqlplus-12.1.0.2.0-1.x86_64.rpm
 oracle-instantclient12.1-jdbc-12.1.0.2.0-1.x86_64.rpm
 oracle-instantclient12.1-devel-12.1.0.2.0-1.x86_64.rpm
 
-Ensure that the major version here 12.1 and the minor version here 0.2.0-1
-match the values of ENV variables ORACLE_MAJOR_VERSION and ORACLE_MINOR_VERSION
+Ensure that the oracle major version here 12.1 and the oracle version here 12.1.0.2.0-1
+match the values of ENV variables ORACLE_MAJOR and ORACLE_VERSION
 defined in the Dockerfile for the building process.
