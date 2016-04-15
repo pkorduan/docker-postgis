@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
   postgresql-server-dev-9.4 \
   alien \
   zip \
-  libaio
+  libaio1
 
 WORKDIR /tmp
 
