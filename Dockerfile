@@ -2,12 +2,9 @@ FROM mdillon/postgis:latest
 MAINTAINER Peter Korduan <peter.korduan@gdi-service.de>
 
 ENV ORACLE_MAJOR_VERSION 12.1
-ENV ORACEL_MINOR_VERSION 0.2.0-1
-
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+ENV ORACLE_MINOR_VERSION 0.2.0-1
 
 RUN apt-get update && apt-get install -y \
-  apt-utils \
   alien \
   zip
 
