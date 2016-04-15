@@ -22,8 +22,9 @@ RUN alien -i oracle-instantclient${ORACLE_MAJOR}-basic-${ORACLE_VERSION}.x86_64.
     alien -i  oracle-instantclient${ORACLE_MAJOR}-jdbc-${ORACLE_VERSION}.x86_64.rpm && \
     alien -i  oracle-instantclient${ORACLE_MAJOR}-devel-${ORACLE_VERSION}.x86_64.rpm
 
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/oracle/12.1/client64/lib
-ENV PATH=$PATH:/usr/lib/oracle/12.1/client64/bin
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/lib/oracle/12.1/client64/lib
+ENV PATH $PATH:/usr/lib/oracle/12.1/client64/bin
+ENV ORACLE_HOME /usr/lib/oracle/12.1/client64/bin
 
 ADD https://github.com/laurenz/oracle_fdw/archive/master.zip ./oracle_fdw.zip
 
