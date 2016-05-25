@@ -4,7 +4,7 @@ MAINTAINER Peter Korduan <pkorduan@gdi-service.de>
 ENV POSTGIS_MAJOR 2.1
 ENV PG_ROUTING_MAJOR 2.0
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
   apt-utils \
   postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
   postgis \
