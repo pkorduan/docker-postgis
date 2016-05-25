@@ -1,23 +1,42 @@
-# docker-postgis
-This Docker image extends mdillon/postgis with oracle_fdw extension.
+# pkoduan/postgis
 
-This Docker image extends mdillon/postgis with oracle_fdw extension.
+This image is forked from appropriate/docker-postgis Branch pgrouting docker-postgis/9.4-2.1 just to have it save for my own use.
+The following text is copied from the forked repository.
 
-This images extends the mdillon/postgis image with the ability to use the PostgreSQL Extension oracle_fdw. oracle_fdw is a Foreign Data Wrapper that let appear tables of an Oracle database as tables in PostgreSQL. Read more here https://github.com/laurenz/oracle_fdw.
-## Build the image
-Clone the repository with the Dockerfile from: https://github.com/pkorduan/docker-postgis.git
-oracle_fdw need the oracle instant client. To install the client inside the image during the build process it is necessary to have downloaded the resources before into the folder oracle below the Dockerfile you will build. Read the instruction in oracle/README.md which files you need. After downloading the right files into the oracle folder run the build in the directory of the Dockerfile:
-``docker build -t pkorduan/postgis:9.4 ./9.4``
-## Run the image
-``docker run -p 5432:5432 -d pkorduan/postgis:9.4``
 
-## Access to an Oracle Database
-You can test the connection to a running Oracle Database within this image by linking a container into the postgis container.
-Run the oracle container:
-``docker run --name oracle -p 1521:1521 -d alexeiled/docker-oracle-xe-11g:latest``
-Run the postgis container:
-``docker run --name postgis -p 5432:5432 --link oracle:oracle -d pkorduan/postgis``
-Run a bash terminal in the postgis container
-``docker exec -it postgis /bin/bash``
-Connect to the oracle database with sqlplus in the postgis container
-``sqlplus system/oracle@$ORACLE_PORT_1521_TCP_ADDR:1521/xe``
+The `postgis` image provides a Docker container running Postgres 9 with
+[PostGIS 2.1](http://postgis.net/docs/manual-2.1/) installed. This image is
+based on the official [`postgres`](https://registry.hub.docker.com/_/postgres/)
+image and provides variants for each version of Postgres 9 supported by the
+base image (9.0-9.4).
+
+This image ensures that the default database created by the parent `postgres`
+image will have the `postgis` and `postgis_topology` extensions installed.
+Unless `-e POSTGRES_DATABASE` is passed to the container at startup time, this
+database will be named after the admin user (either `postgres` or the user
+specified with `-e POSTGRES_USER`). For Postgres 9.1+, the `fuzzystrmatch` and
+`postgis_tiger_geocoder` extensions are also installed.
+
+If you would prefer to use the older template database mechanism for enabling
+PostGIS, the image also provides a PostGIS-enabled template database called
+`template_postgis`.
+
+## Usage
+
+In order to run a basic container capable of serving a PostGIS-enabled database,
+start a container as follows:
+
+    docker run --name some-postgis -e POSTGRES_PASSWORD=mysecretpassword -d mdillon/postgis
+
+For more detailed instructions about how to start and control your Postgres
+container, see the documentation for the `postgres` image
+[here](https://registry.hub.docker.com/_/postgres/).
+
+Once you have started a database container, you can then connect to the
+database as follows:
+
+    docker run -it --link some-postgis:postgres --rm postgres \
+        sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
+
+See [the PostGIS documentation](http://postgis.net/docs/postgis_installation.html#create_new_db_extensions)
+for more details on your options for creating and using a spatially-enabled database.
