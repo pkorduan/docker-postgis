@@ -1,5 +1,5 @@
 FROM postgres:9.4
-MAINTAINER Peter Korduan <pkorduan@gdi-service.de>
+MAINTAINER Peter Korduan <peter.korduan@gdi-service.de>
 
 ENV POSTGIS_MAJOR 2.1
 ENV PG_ROUTING_MAJOR 2.0
