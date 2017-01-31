@@ -3,6 +3,10 @@ echo "Gesetzte Umgebungsvariablen:"
 echo "POSTGRES_USER: "$POSTGRES_USER
 echo "POSTGRES_DB: "$POSTGRES_DB
 echo "PG_MAJOR: "$PG_MAJOR
+<<<<<<< HEAD
+=======
+echo "DB: "$DB
+>>>>>>> 73e3dab2b0a3eb4b6ca1556eac59689b9b5bc8ab
 
 set -e
 
@@ -27,6 +31,14 @@ for DB in template_postgis "$POSTGRES_DB"; do
 			CREATE EXTENSION postgis_tiger_geocoder;
 			CREATE EXTENSION pgrouting;
 		EOSQL
+<<<<<<< HEAD
+=======
+
+		echo "Loading pgRouting into $DB via CREATE EXTENSION"
+		psql --dbname="$DB" <<-'EOSQL'
+			CREATE EXTENSION pgrouting;
+		EOSQL
+>>>>>>> 73e3dab2b0a3eb4b6ca1556eac59689b9b5bc8ab
 	else
 		echo "Loading PostGIS into $DB via files"
 		files='
