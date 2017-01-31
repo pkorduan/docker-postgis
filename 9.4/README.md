@@ -10,6 +10,7 @@ oracle_fdw need the oracle instant client. To install the client inside the imag
 ``docker build -t pkorduan/postgis:9.4 ./9.4``
 ## Run the image
 ``docker run -p 5432:5432 -d pkorduan/postgis:9.4``
+Consider to have not run an existing container on that port.
 
 ## Access to an Oracle Database
 You can test the connection to a running Oracle Database within this image by linking a container into the postgis container.
