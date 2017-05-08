@@ -1,7 +1,7 @@
 FROM postgres:9.4
 MAINTAINER Peter Korduan <peter.korduan@gdi-service.de>
 
-ENV POSTGIS_MAJOR 2.1
+ENV POSTGIS_MAJOR 2.3
 ENV PG_ROUTING_MAJOR 2.0
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
