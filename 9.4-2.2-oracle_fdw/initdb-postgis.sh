@@ -3,6 +3,7 @@ echo "Gesetzte Umgebungsvariablen:"
 echo "POSTGRES_USER: "$POSTGRES_USER
 echo "POSTGRES_DB: "$POSTGRES_DB
 echo "PG_MAJOR: "$PG_MAJOR
+echo "POSTGIS_MAJOR: "$POSTGIS_MAJOR
 
 set -e
 
