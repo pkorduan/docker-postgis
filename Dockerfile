@@ -10,5 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   postgis \
   && rm -rf /var/lib/apt/lists/*
 
+#RUN alias psql='LD_PRELOAD=/lib/x86_64-linux-gnu/libreadline.so.6.3 psql'
+
 RUN mkdir -p /docker-entrypoint-initdb.d
 COPY ./initdb-postgis.sh /docker-entrypoint-initdb.d/postgis.sh

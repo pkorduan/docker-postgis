@@ -38,10 +38,9 @@ RUN rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /docker-entrypoint-initdb.d
 
-ADD sources/postgresql.conf.kvwmap /usr/share/postgresql/postgres.conf.kvwmap
+ADD sources/postgresql.conf.kvwmap /usr/share/postgresql/postgresql.conf.kvwmap
 
-RUN mv /usr/share/postgresql/postgres.conf.sample /usr/share/postgresql/postgres.conf.sample_original && \
-    rm /usr/share/postgresql/postgres.conf.sample && \
-    cp /usr/share/postgresql/postgres.conf.kvwmap /usr/share/postgresql/postgres.conf.sample
+RUN mv /usr/share/postgresql/postgresql.conf.sample /usr/share/postgresql/postgressql.conf.sample_original && \
+    cp /usr/share/postgresql/postgresql.conf.kvwmap /usr/share/postgresql/postgresql.conf.sample
 
 COPY ./initdb-postgis.sh /docker-entrypoint-initdb.d/postgis.sh
