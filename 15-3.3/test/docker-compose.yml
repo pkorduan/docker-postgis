@@ -1,0 +1,18 @@
+version: '3'
+services:
+    postgres-postgis:
+        image: pkorduan/postgis:15-3.3
+        container_name: postgis15test
+        environment:
+        - POSTGRES_PASSWORD=postgres
+        volumes:
+        - ./data:/var/lib/postgresql/data
+        - ./logs:/var/log/pgsql
+        - ./pgbackrest:/pgbackrest
+
+       #use default        - ./config/postgresql.conf:/var/lib/postgresql/config/postgresql.conf
+       #use default        - ./config/pg_hba.conf:/var/lib/postgresql/config/pg_hba.conf
+       #- ./config/.pgpass:/root/.pgpass
+
+        #ports:
+        #- 5432:5432
