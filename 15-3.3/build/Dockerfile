@@ -40,15 +40,19 @@ ADD sources/oracle /usr/local/oracle
 
 WORKDIR /usr/local/oracle
 
-RUN alien -i oracle-instantclient11.2-basic-11.2.0.1.0-1.x86_64.rpm && \
-    alien -i oracle-instantclient11.2-devel-11.2.0.1.0-1.x86_64.rpm && \
-    alien -i oracle-instantclient11.2-sqlplus-11.2.0.1.0-1.x86_64.rpm
+#RUN alien -i oracle-instantclient11.2-basic-11.2.0.1.0-1.x86_64.rpm && \
+#    alien -i oracle-instantclient11.2-devel-11.2.0.1.0-1.x86_64.rpm && \
+#    alien -i oracle-instantclient11.2-sqlplus-11.2.0.1.0-1.x86_64.rpm
 
-RUN cp /usr/lib/oracle/11.2/client64/lib/libclntsh.so.11.1 /usr/lib && \
-    cp /usr/lib/oracle/11.2/client64/lib/libnnz11.so /usr/lib
+RUN alien --scripts -i oracle-instantclient-basic-21.8.0.0.0-1.x86_64.rpm && \
+    alien --scripts -i oracle-instantclient-sqlplus-21.8.0.0.0-1.el8.x86_64.rpm && \
+    alien --scripts -i oracle-instantclient-devel-21.8.0.0.0-1.el8.x86_64.rpm
 
-ENV ORACLE_HOME "/usr/lib/oracle/11.2/client64"
-ENV LD_LIBRARY_PATH "/usr/lib/oracle/11.2/client64/lib:/usr/lib/oracle/11.2/client64"
+RUN cp /usr/lib/oracle/21/client64/lib/libclntsh.so.21.1 /usr/lib && \
+    cp /usr/lib/oracle/21/client64/lib/libnnz21.so /usr/lib
+
+ENV ORACLE_HOME "/usr/lib/oracle/21/client64"
+ENV LD_LIBRARY_PATH "/usr/lib/oracle/21/client64/lib:/usr/lib/oracle/21/client64"
 
 RUN wget https://github.com/laurenz/oracle_fdw/archive/refs/tags/ORACLE_FDW_2_5_0.tar.gz && \
     tar xvfz ORACLE_FDW_2_5_0.tar.gz
@@ -100,6 +104,5 @@ RUN echo "alias ls='ls $LS_OPTIONS' \n alias ll='ls $LS_OPTIONS -l' \n alias rm=
 RUN cat /etc/bash.bashrc
 #set work env
 WORKDIR /
-USER postgres
 
 CMD [ "docker-entrypoint.sh", "postgres", "-c", "config_file=/var/lib/postgresql/config/postgresql.conf" ]

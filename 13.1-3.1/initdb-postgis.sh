@@ -27,6 +27,7 @@ for DB in template_postgis "$POSTGRES_DB"; do
 			CREATE EXTENSION fuzzystrmatch;
 			CREATE EXTENSION postgis_tiger_geocoder;
 			CREATE EXTENSION pgrouting;
+			CREATE EXTENSION postgis_raster;
 		EOSQL
 	else
 		echo "Loading PostGIS into $DB via files"
