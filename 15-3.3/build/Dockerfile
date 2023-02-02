@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y \
     jq \
     git
 
-#Oracle FDW
+#Oracle FDW lkee only
 ADD sources/oracle /usr/local/oracle
 
 WORKDIR /usr/local/oracle
@@ -95,6 +95,9 @@ COPY sources/20_pg_cron.sql /docker-entrypoint-initdb.d/
 #pg_track_settings
 COPY sources/40_pg_track_settings.sql /docker-entrypoint-initdb.d/
 
+#aliase
+RUN echo "alias ls='ls $LS_OPTIONS' \n alias ll='ls $LS_OPTIONS -l' \n alias rm='rm -i' \n" >> /etc/bash.bashrc
+RUN cat /etc/bash.bashrc
 #set work env
 WORKDIR /
 USER postgres
