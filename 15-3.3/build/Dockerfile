@@ -40,10 +40,6 @@ ADD sources/oracle /usr/local/oracle
 
 WORKDIR /usr/local/oracle
 
-#RUN alien -i oracle-instantclient11.2-basic-11.2.0.1.0-1.x86_64.rpm && \
-#    alien -i oracle-instantclient11.2-devel-11.2.0.1.0-1.x86_64.rpm && \
-#    alien -i oracle-instantclient11.2-sqlplus-11.2.0.1.0-1.x86_64.rpm
-
 RUN alien --scripts -i oracle-instantclient-basic-21.8.0.0.0-1.x86_64.rpm && \
     alien --scripts -i oracle-instantclient-sqlplus-21.8.0.0.0-1.el8.x86_64.rpm && \
     alien --scripts -i oracle-instantclient-devel-21.8.0.0.0-1.el8.x86_64.rpm
@@ -68,19 +64,12 @@ RUN rm -rdf /usr/local/oracle
 RUN rm /etc/localtime
 RUN ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 
-#alias
-RUN sed -i \
-        -e "s|# alias ls=|alias ls=|g" \
-        -e "s|# alias ll=|alias ll=|g" \
-        -e "s|# alias rm=|alias rm=|g" \
-        ~/.bashrc
-
 #rm package lists
 RUN rm -rf /var/lib/apt/lists/*
 
 #postgresql settings
-ADD sources/postgresql.conf sources/pg_hba.conf /var/lib/postgresql/config/
-RUN chown 999.999 /var/lib/postgresql/config/*
+ADD --chown=postgres:postgres sources/postgresql.conf sources/pg_hba.conf /var/lib/postgresql/config/
+ADD --chown=postgres:postgres sources/conf.d /var/lib/postgresql/config/conf.d
 
 #pgbackrest setting
 RUN mkdir -p /etc/pgbackrest/conf.d
@@ -101,8 +90,10 @@ COPY sources/40_pg_track_settings.sql /docker-entrypoint-initdb.d/
 
 #aliase
 RUN echo "alias ls='ls $LS_OPTIONS' \n alias ll='ls $LS_OPTIONS -l' \n alias rm='rm -i' \n" >> /etc/bash.bashrc
-RUN cat /etc/bash.bashrc
+
 #set work env
-WORKDIR /
+WORKDIR /var/lib/postgresql
+USER postgres
+
 
 CMD [ "docker-entrypoint.sh", "postgres", "-c", "config_file=/var/lib/postgresql/config/postgresql.conf" ]
