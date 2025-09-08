@@ -1,42 +1,63 @@
-# pkoduan/postgis
+# Postgres 16 + PostGIS 3.5
 
-This image is forked from appropriate/docker-postgis Branch pgrouting docker-postgis/9.4-2.1 just to have it save for my own use.
-The following text is copied from the forked repository.
+## Quickstart
+1. Variablen in der .env setzen.
+  * ```NETWORK_NAME``` Name des Docker-Netzwerkes (Default=kvwmap_prod)
+  * ```SERVICE_NAME``` Name des Services (Default=pgsql16)
+  * ```POSTGRES_PASSWORD``` Passwort des Postgres-User "postgres", muss gesetzt werden
+  * ```POSTGRES_KVWMAP_PASSWORD``` Passwort für Postgres-User "kvwmap", muss bei neuem Cluster gesetzt werden
+2. ```INITDB_*``` Variablen steuern die Ausführung der Entrypoint-Scripte. 
+    1. neue kvwmap-Instanz 
+```
+INITDB_PGBACKREST: "true"
+INITDB_KVWMAPSP_DB: "true"
+```
+    2. Upgrade der DB, kvwmapsp-Datenbank wird übernommen, muss nicht erstellt werden. pgbackrest sollte für bessere Performance
+ erst nach dem Import aktiviert werden.
+```
+INITDB_PGBACKREST: "false"
+INITDB_KVWMAPSP_DB: "false"
+```
 
+## Eigenschaften
+* Image wird lokale gebaut
+* basiert auf postgis/postgis:16-3.5, welches wiederum dem Standard postgres-Image aufbaut
+* enthält folgende Extensions
+  * mysql-fdw
+  * oracle-fdw
+  * pgstat
+  * pg-track-settings
+  * pg-cron
+  * pgmonitor
 
-The `postgis` image provides a Docker container running Postgres 9 with
-[PostGIS 2.1](http://postgis.net/docs/manual-2.1/) installed. This image is
-based on the official [`postgres`](https://registry.hub.docker.com/_/postgres/)
-image and provides variants for each version of Postgres 9 supported by the
-base image (9.0-9.4).
+## Postgres-Konfiguration
+* die Postgres-Konfiguration (.pgpass, postgres.conf, pg_hba.conf) liegt unter ```./config```
+* das Cluster wird im Entrypoint mit ```postgres -c config_file=/var/lib/postgresql/config/postgresql.conf``` gestartet
+* alle Verzeichnisse in die der Container schreibt, müssen ```chown 999:999 data pgbackrest logs``` gehören
 
-This image ensures that the default database created by the parent `postgres`
-image will have the `postgis` and `postgis_topology` extensions installed.
-Unless `-e POSTGRES_DATABASE` is passed to the container at startup time, this
-database will be named after the admin user (either `postgres` or the user
-specified with `-e POSTGRES_USER`). For Postgres 9.1+, the `fuzzystrmatch` and
-`postgis_tiger_geocoder` extensions are also installed.
+## Docker-Konfiguration
+Die wichtigsten Variablen werden in der ```.env``` gesetzt.
 
-If you would prefer to use the older template database mechanism for enabling
-PostGIS, the image also provides a PostGIS-enabled template database called
-`template_postgis`.
+## Entrypoint-Scripte
+im Entrypoint ```/docker-entrypoint-initdb.d/``` liegen Scripte um kvwmap, die Extension, Backup und Monitoring einzurichten. Über das Environemnt lassen sie sich steuern.
 
-## Usage
+|Funktion             |Script                             |Environment                        |Default-Wert|     
+|---                    |---                                |---                                |---                 |
+|pg_cron              |sources/20_pg_cron.sh            |```INITDB_PGCRON: "true"```      |```true```|
+|Backup               |sources/30_init_pgbackrest.sh    |```INITDB_PGBACKREST: "true"```  |```true```|
+|pg_track_settings      |sources/40_pg_track_settings.sh    |```INITDB_PGTRACKSETTINGS: "true"```|```true```|
+|kvwmapsp Datenbank     |sources/50_kvwmap_create.sh        |```INITDB_KVWMAPSP_DB: "true INITDB_KVWMAP_PASSWORD: "kvwmapPw""```    |```false```|
 
-In order to run a basic container capable of serving a PostGIS-enabled database,
-start a container as follows:
+## Maintenance 
+* Logs aufräumen ```
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+00 04 * * * root /home/gisadmin/networks/kvwmap_prod/services/postgres-16-3.5/maintenance/logs.sh /home/gisadmin/networks/kvwmap_prod/services/postgres-16-3.5/logs
+``` 
 
-    docker run --name some-postgis -e POSTGRES_PASSWORD=mysecretpassword -d mdillon/postgis
-
-For more detailed instructions about how to start and control your Postgres
-container, see the documentation for the `postgres` image
-[here](https://registry.hub.docker.com/_/postgres/).
-
-Once you have started a database container, you can then connect to the
-database as follows:
-
-    docker run -it --link some-postgis:postgres --rm postgres \
-        sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
-
-See [the PostGIS documentation](http://postgis.net/docs/postgis_installation.html#create_new_db_extensions)
-for more details on your options for creating and using a spatially-enabled database.
+## Monitoring
+In Kombination mit https://github.com/dudehro/zabbix_conf kann im docker-compose ein Label gesetzt werden:
+```
+label:
+    monitoring.pgmonitor: true
+```
