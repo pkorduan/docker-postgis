@@ -30,7 +30,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tree \
     jq \
     postgis \
-    git
+    git \
+    libsybdb5 freetds-dev freetds-common
 
 #######################################
 # locale, Zeit
@@ -62,6 +63,22 @@ RUN rm /etc/pgbackrest.conf
 # https://github.com/CrunchyData/pgmonitor-extension
 WORKDIR /etc/
 RUN git clone https://github.com/CrunchyData/pgmonitor-extension.git && cd pgmonitor-extension && make install
+
+#######################################
+# tds_fdw
+#######################################
+
+# tds_fdw bauen (gemäß InstallDebian.md)
+# Quelle: https://sources.debian.org/src/tds-fdw/2.0.4-1/InstallDebian.md
+ARG TDS_FDW_VERSION=2.0.4
+WORKDIR /tmp
+RUN set -eux; \
+    wget -qO- "https://github.com/tds-fdw/tds_fdw/archive/v${TDS_FDW_VERSION}.tar.gz" | tar -xz; \
+    cd "tds_fdw-${TDS_FDW_VERSION}"; \
+    make USE_PGXS=1; \
+    make USE_PGXS=1 install; \
+    cd /; \
+    rm -rf "/tmp/tds_fdw-${TDS_FDW_VERSION}"
 
 #######################################
 # Konfiguration und Init-Dateien
