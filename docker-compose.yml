@@ -1,9 +1,8 @@
-version: '3'
 services:
     postgres-postgis:
         build: ./build
-        container_name: ${NETWORK_NAME:-kvwmap_prod}_${SERVICE_NAME:-pgsql16}
-        hostname: ${NETWORK_NAME:-kvwmap_prod}_${SERVICE_NAME:-pgsql16}
+        container_name: ${NETWORK_NAME:-kvwmap_prod}_${SERVICE_NAME:-pgsql}
+        hostname: ${NETWORK_NAME:-kvwmap_prod}_${SERVICE_NAME:-pgsql}
         shm_size: 4g #shared_buffers / 4
         environment:
           POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
