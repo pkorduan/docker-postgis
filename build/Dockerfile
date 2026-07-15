@@ -1,14 +1,14 @@
-FROM postgis/postgis:16-3.5
+FROM postgis/postgis:17-3.5
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-16-mysql-fdw \
-    postgresql-16-oracle-fdw \
-    postgresql-16-pgrouting \
+    postgresql-17-mysql-fdw \
+    postgresql-17-oracle-fdw \
+    postgresql-17-pgrouting \
 #    postgresql-contrib-15 \
-    postgresql-server-dev-16 \
+    postgresql-server-dev-17 \
     pgstat \
-    postgresql-16-pg-track-settings \
-    postgresql-16-cron \
+    postgresql-17-pg-track-settings \
+    postgresql-17-cron \
 #    postgresql-15-pgaudit \
 #    postgresql-15-powa \
 #    postgresql-15-pg-qualstats \
@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata \
     tree \
     jq \
+    zstd \
     postgis \
     git \
     libsybdb5 freetds-dev freetds-common
@@ -92,6 +93,10 @@ COPY sources/20_pg_cron.sh /docker-entrypoint-initdb.d/
 COPY sources/30_init_pgbackrest.sh /docker-entrypoint-initdb.d/
 COPY sources/40_pg_track_settings.sh /docker-entrypoint-initdb.d/
 COPY sources/50_kvwmapsp.sh /docker-entrypoint-initdb.d/
+
+# Log-Wartungsskript (wird per Host-Cron via docker exec aufgerufen)
+COPY sources/logs.sh /usr/local/bin/logs.sh
+RUN chmod +x /usr/local/bin/logs.sh
 
 #aliase
 RUN echo "alias ls='ls $LS_OPTIONS' \n alias ll='ls $LS_OPTIONS -l' \n alias rm='rm -i' \n" >> /etc/bash.bashrc

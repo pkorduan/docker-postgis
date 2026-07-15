@@ -1,8 +1,8 @@
 # docker-postgis
 
-PostgreSQL 16 / PostGIS 3.5 Docker-Image mit zusätzlichen Erweiterungen und vorkonfigurierter Umgebung für den Einsatz mit [kvwmap](https://github.com/kvwmap/kvwmap).
+PostgreSQL 17 / PostGIS 3.5 Docker-Image mit zusätzlichen Erweiterungen und vorkonfigurierter Umgebung für den Einsatz mit [kvwmap](https://github.com/kvwmap/kvwmap).
 
-Basiert auf dem offiziellen Image [`postgis/postgis:16-3.5`](https://hub.docker.com/r/postgis/postgis).
+Basiert auf dem offiziellen Image [`postgis/postgis:17-3.5`](https://hub.docker.com/r/postgis/postgis).
 
 ## Enthaltene Erweiterungen
 
@@ -75,7 +75,18 @@ docker network create kvwmap_prod
 POSTGRES_PASSWORD=geheimes_passwort
 POSTGRES_KVWMAP_PASSWORD=kvwmap_passwort
 NETWORK_NAME=kvwmap_prod
-SERVICE_NAME=pgsql16
+SERVICE_NAME=pgsql17
+```
+
+### Verzeichnisse und Log-Cronjob einrichten
+
+Legt die Volume-Verzeichnisse mit korrekter Ownership (uid/gid 999) an und
+installiert den Host-Cronjob für die Log-Wartung (`/etc/cron.d/docker-postgis-logs`).
+Liest `.env`, muss also **nach** dem Anlegen der `.env` und **vor** dem Start
+laufen. Benötigt root (chown + `/etc/cron.d`):
+
+```bash
+sudo ./post-clone.sh
 ```
 
 ### Starten
@@ -102,6 +113,29 @@ Die Skripte unter `build/sources/` werden beim ersten Start (initdb) in alphabet
 - **`30_init_pgbackrest.sh`** – Legt die pgBackRest-Stanza `local` an und führt einen ersten Check durch.
 - **`40_pg_track_settings.sh`** – Richtet `pg_track_settings` ein.
 - **`50_kvwmapsp.sh`** – Legt die Datenbank `kvwmapsp` mit PostGIS, pgcrypto und Monitoring-Schema an. Aktualisiert proj4text für mecklenburgische Koordinatenreferenzsysteme (SRID 4314, 4178, 2398, 31967–31969). Richtet einen `zabbix`-Benutzer für das Monitoring ein.
+
+## Log-Wartung
+
+Das Skript `logs.sh` liegt im Image unter `/usr/local/bin/logs.sh` und komprimiert
+alte PostgreSQL-Logs mit `zstd` (Dateien älter als 1 Tag) und löscht Logs sowie
+Archive nach einer konfigurierbaren Anzahl Tagen (Default 90):
+
+```
+logs.sh <Log-Verzeichnis> <Alter-in-Tagen>
+```
+
+Ausgeführt wird es im Container (fixer Log-Pfad `/var/log/pgsql`), ausgelöst per
+**Host-Cron** via `docker exec`. Der Cronjob wird beim Aufsetzen automatisch von
+`post-clone.sh` unter `/etc/cron.d/docker-postgis-logs` eingerichtet:
+
+```cron
+# Täglich 03:30: PostgreSQL-Logs im Container komprimieren, nach 90 Tagen löschen
+30 3 * * *  root  docker exec kvwmap_prod_pgsql /usr/local/bin/logs.sh /var/log/pgsql 90
+```
+
+Der Containername ergibt sich aus `${NETWORK_NAME}_${SERVICE_NAME}` (hier
+`kvwmap_prod_pgsql`) und wird von `post-clone.sh` aus der `.env` übernommen;
+Zeitplan und Aufbewahrungsdauer sind in der erzeugten Cron-Datei frei anpassbar.
 
 ## Monitoring
 

@@ -3,7 +3,7 @@
 set -euo pipefail
 
 CONTAINER_ALT="kvwmap_prod_pgsql"
-CONTAINER_NEU="kvwmap_prod_pgsql16"
+CONTAINER_NEU="kvwmap_prod_pgsql17"
 STAGE=${1:-all}  # standardmäßig 'all', falls kein Parameter übergeben
 
 # Zielordner für Logs pro Stage
