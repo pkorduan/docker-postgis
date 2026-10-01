@@ -1,5 +1,14 @@
 FROM postgis/postgis:16-3.5
 
+# Basis-Image ist Debian bullseye (EOL), die Live-Spiegel liefern nicht mehr aus:
+# - apt.postgresql.org: bullseye-pgdg nur noch im Archiv
+# - deb.debian.org: bullseye-security-Pakete 404
+# Debian deshalb auf den Snapshot pinnen, aus dem das Basis-Image gebaut ist
+# (die auskommentierten Zeilen in sources.list), damit die Versionen passen.
+RUN sed -i 's#http://apt.postgresql.org/pub/repos/apt/#https://apt-archive.postgresql.org/pub/repos/apt/#' /etc/apt/sources.list.d/pgdg.list \
+ && sed -i -e '/^deb /d' -e 's/^# deb http:\/\/snapshot/deb http:\/\/snapshot/' /etc/apt/sources.list \
+ && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99snapshot
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-16-mysql-fdw \
     postgresql-16-oracle-fdw \
