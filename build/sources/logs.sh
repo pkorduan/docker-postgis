@@ -8,7 +8,7 @@ if [ -z "$1" ] || ! [ -d "$1" ]; then
 fi
 if [ -z "$2" ]; then
     echo "Es wurde kein Alter für Logdateien angegeben. Nutze Default 90 Tage."
-    deleteAfter=90
+    deleteAfter=7
 else
     deleteAfter="$2"
 fi

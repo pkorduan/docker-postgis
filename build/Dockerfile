@@ -1,4 +1,4 @@
-FROM postgis/postgis:17-3.5
+FROM postgis/postgis:17-3.6
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-17-mysql-fdw \
@@ -22,7 +22,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 #    libaio-dev \
     locales \
     locales-all \
-    ntp \
     htop \
     wget \
     nano \
@@ -32,7 +31,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zstd \
     postgis \
     git \
-    libsybdb5 freetds-dev freetds-common
+    libsybdb5 freetds-dev freetds-common \
+    psmisc
 
 #######################################
 # locale, Zeit
@@ -55,10 +55,12 @@ RUN ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 #######################################
 
 #pgbackrest settings
-RUN mkdir -p /etc/pgbackrest/conf.d
-COPY sources/pgbackrest.local.conf /etc/pgbackrest/conf.d
-RUN chown -R 999:999 /etc/pgbackrest/conf.d
-RUN rm /etc/pgbackrest.conf
+# Basis-Konfiguration im Image, Host-spezifisches (repo2, SSH-Key, known_hosts) wird nach /etc/pgbackrest/host gemountet
+RUN rm -f /etc/pgbackrest.conf \
+ && mkdir -p /etc/pgbackrest/host /var/spool/pgbackrest \
+ && chown 999:999 /etc/pgbackrest/host /var/spool/pgbackrest
+COPY sources/pgbackrest.conf /etc/pgbackrest/pgbackrest.conf
+ENV PGBACKREST_CONFIG_INCLUDE_PATH=/etc/pgbackrest/host
 
 #pgmonitor bauen
 # https://github.com/CrunchyData/pgmonitor-extension
@@ -100,6 +102,10 @@ RUN chmod +x /usr/local/bin/logs.sh
 
 #aliase
 RUN echo "alias ls='ls $LS_OPTIONS' \n alias ll='ls $LS_OPTIONS -l' \n alias rm='rm -i' \n" >> /etc/bash.bashrc
+
+# Volumes haben richtige Rechte (muss vor USER postgres stehen)
+RUN mkdir -p /var/log/pgsql /pgbackrest \
+ && chown postgres:postgres /var/log/pgsql /pgbackrest
 
 #set work env
 WORKDIR /var/lib/postgresql

@@ -3,6 +3,7 @@ services:
         build: ./build
         container_name: ${NETWORK_NAME:-kvwmap_prod}_${SERVICE_NAME:-pgsql}
         hostname: ${NETWORK_NAME:-kvwmap_prod}_${SERVICE_NAME:-pgsql}
+        stop_grace_period: 5m
         shm_size: 4g #shared_buffers / 4
         environment:
           POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -15,9 +16,10 @@ services:
         - ./data:/var/lib/postgresql/data
         - ./logs:/var/log/pgsql
         - ./pgbackrest:/pgbackrest
-        - ./config/.pgpass:/var/lib/postgresql/config/.pgpass
-        - ./config/postgresql.conf:/var/lib/postgresql/config/postgresql.conf
-        - ./config/pg_hba.conf:/var/lib/postgresql/config/pg_hba.conf
+        - ./config/pgbackrest:/etc/pgbackrest/host:ro #für Repo2 mounten
+        - ./config/.pgpass:/var/lib/postgresql/config/.pgpass:ro
+        - ./config/postgresql.conf:/var/lib/postgresql/config/postgresql.conf:ro
+        - ./config/pg_hba.conf:/var/lib/postgresql/config/pg_hba.conf:ro
         - ./www:/var/www
         - ./dumps:/dumps
         - ../../volumes/proj/proj.db:/usr/share/proj/proj.db
@@ -25,7 +27,7 @@ services:
         - ../../volumes/proj/MVTR2010.gsb:/usr/share/proj/MVTR2010.gsb
         - ../../volumes/proj/MVTRS4283.gsb:/usr/share/proj/MVTRS4283.gsb
         ports:
-        - "5432:5432"
+        - "127.0.0.1:5432:5432"
         networks:
             default:
                 aliases:

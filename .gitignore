@@ -1,2 +1,4 @@
 /9.4/oracle/*
 !/9.4/oracle/README.md
+# Host-spezifische Konfiguration (Passwörter, pgBackRest repo2 mit SSH-Key und Cipher-Passphrase)
+/config/
