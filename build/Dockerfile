@@ -1,5 +1,8 @@
 FROM postgis/postgis:17-3.6
 
+# PostGIS auf Version des Basis-Images fixieren (sonst zieht apt 3.7 nach)
+RUN apt-mark hold postgresql-17-postgis-3 postgresql-17-postgis-3-scripts
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-17-mysql-fdw \
     postgresql-17-oracle-fdw \
@@ -29,9 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tree \
     jq \
     zstd \
-    postgis \
-# ab PostGIS 3.7 eigenes Paket (nicht mehr in postgresql-17-postgis-3-scripts)
-    postgresql-17-postgis-tiger-geocoder \
+    postgis=${POSTGIS_VERSION} \
     git \
     libsybdb5 freetds-dev freetds-common \
     psmisc
