@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     jq \
     zstd \
     postgis \
+# ab PostGIS 3.7 eigenes Paket (nicht mehr in postgresql-17-postgis-3-scripts)
+    postgresql-17-postgis-tiger-geocoder \
     git \
     libsybdb5 freetds-dev freetds-common \
     psmisc
