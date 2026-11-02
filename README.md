@@ -100,6 +100,15 @@ sudo ./post-clone.sh
 docker compose up -d
 ```
 
+## Smoketest
+
+```bash
+test/smoketest.sh            # baut ./build und testet
+test/smoketest.sh <image>    # testet ein vorhandenes Image
+```
+
+Startet einen Wegwerf-Container ohne Volumes und prüft: alle verfügbaren Extensions (`CREATE EXTENSION`), Funktionstests für PostGIS/pgRouting/FDWs, Ergebnis der InitDB-Skripte (pg_cron, pg_track_settings, kvwmapsp, pgmonitor), pgBackRest (check, Full-Backup) und Locale/Zeitzone. Exit-Code = Anzahl der Fehler.
+
 ## Umgebungsvariablen (Container)
 
 | Variable | Standard | Beschreibung |
