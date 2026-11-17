@@ -27,7 +27,7 @@ services:
         - ../../volumes/proj/MVTR2010.gsb:/usr/share/proj/MVTR2010.gsb
         - ../../volumes/proj/MVTRS4283.gsb:/usr/share/proj/MVTRS4283.gsb
         ports:
-        - "127.0.0.1:5432:5432"
+        - "0.0.0.0:5432:5432"
         networks:
             default:
                 aliases:
