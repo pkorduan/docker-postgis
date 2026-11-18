@@ -9,7 +9,7 @@ if [ "${INITDB_KVWMAPSP_DB:-false}" = "true" ]; then
 
 CREATE ROLE kvwmap WITH SUPERUSER LOGIN PASSWORD '${PG_KVWMAP_PASSWORD}';
 
-GRANT SET ON PARAMETER log_min_messages TO "kvwmap";
+-- GRANT SET ON PARAMETER gibt es erst ab PG 15; unter 14 kann kvwmap log_min_messages nicht selbst setzen
 CREATE DATABASE kvwmapsp WITH OWNER kvwmap;
 \c kvwmapsp
 CREATE EXTENSION IF NOT EXISTS postgis;

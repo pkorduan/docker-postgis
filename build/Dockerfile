@@ -1,17 +1,17 @@
-FROM postgis/postgis:17-3.6
+FROM postgres:14.25-trixie
 
-# PostGIS auf Version des Basis-Images fixieren (sonst zieht apt 3.7 nach)
-RUN apt-mark hold postgresql-17-postgis-3 postgresql-17-postgis-3-scripts
+# PostGIS 3.1 gibt es nicht mehr als Paket (PGDG hat für PG 14 nur 3.6/3.7) -> unten aus dem Quellcode gebaut.
+# Paket-PostGIS sperren, damit apt es nicht als Abhängigkeit nachzieht
+RUN printf 'Package: postgresql-14-postgis* postgis\nPin: release *\nPin-Priority: -1\n' > /etc/apt/preferences.d/no-postgis-pkg
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-17-mysql-fdw \
-    postgresql-17-oracle-fdw \
-    postgresql-17-pgrouting \
+    postgresql-14-mysql-fdw \
+    postgresql-14-oracle-fdw \
 #    postgresql-contrib-15 \
-    postgresql-server-dev-17 \
+    postgresql-server-dev-14 \
     pgstat \
-    postgresql-17-pg-track-settings \
-    postgresql-17-cron \
+    postgresql-14-pg-track-settings \
+    postgresql-14-cron \
 #    postgresql-15-pgaudit \
 #    postgresql-15-powa \
 #    postgresql-15-pg-qualstats \
@@ -32,10 +32,42 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tree \
     jq \
     zstd \
-    postgis=${POSTGIS_VERSION} \
     git \
     libsybdb5 freetds-dev freetds-common \
     psmisc
+
+#######################################
+# PostGIS 3.1 und pgRouting 3.x aus dem Quellcode
+#######################################
+
+ARG POSTGIS_VERSION=3.1.13
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        libgeos-dev libproj-dev proj-data libgdal-dev libxml2-dev libjson-c-dev \
+        libprotobuf-c-dev protobuf-c-compiler libsfcgal-dev pkg-config \
+        cmake libboost-graph-dev; \
+    cd /tmp; \
+    wget -qO- "https://download.osgeo.org/postgis/source/postgis-${POSTGIS_VERSION}.tar.gz" | tar -xz; \
+    cd "postgis-${POSTGIS_VERSION}"; \
+    # neuere GDAL definiert MIN() nicht mehr, GCC 14 bricht ab -> Min() aus PostgreSQL nehmen
+    sed -i 's/\bMIN(/Min(/g' raster/rt_pg/rtpg_geometry.c; \
+    ./configure --with-sfcgal; \
+    make -j"$(nproc)"; \
+    make install; \
+    cd /; rm -rf "/tmp/postgis-${POSTGIS_VERSION}"
+
+# pgRouting-Paket aus PGDG hängt am Paket-PostGIS und ist 4.x (viele Funktionen entfernt) -> letztes 3.x selbst bauen
+ARG PGROUTING_VERSION=3.8.0
+RUN set -eux; \
+    cd /tmp; \
+    wget -qO- "https://github.com/pgRouting/pgrouting/archive/v${PGROUTING_VERSION}.tar.gz" | tar -xz; \
+    mkdir "pgrouting-${PGROUTING_VERSION}/build"; \
+    cd "pgrouting-${PGROUTING_VERSION}/build"; \
+    cmake ..; \
+    make -j"$(nproc)"; \
+    make install; \
+    cd /; rm -rf "/tmp/pgrouting-${PGROUTING_VERSION}"
 
 #######################################
 # locale, Zeit
@@ -94,6 +126,7 @@ RUN set -eux; \
 ADD --chown=postgres:postgres sources/postgresql.conf sources/pg_hba.conf /var/lib/postgresql/config/
 
 # initdb scripte
+COPY sources/10_postgis.sh /docker-entrypoint-initdb.d/
 COPY sources/20_pg_cron.sh /docker-entrypoint-initdb.d/
 COPY sources/30_init_pgbackrest.sh /docker-entrypoint-initdb.d/
 COPY sources/40_pg_track_settings.sh /docker-entrypoint-initdb.d/

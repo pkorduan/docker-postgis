@@ -1,8 +1,10 @@
 # docker-postgis
 
-PostgreSQL 17 / PostGIS 3.6 Docker-Image mit zusätzlichen Erweiterungen und vorkonfigurierter Umgebung für den Einsatz mit [kvwmap](https://github.com/kvwmap/kvwmap).
+PostgreSQL 14.25 / PostGIS 3.1 Docker-Image mit zusätzlichen Erweiterungen und vorkonfigurierter Umgebung für den Einsatz mit [kvwmap](https://github.com/kvwmap/kvwmap).
 
-Basiert auf dem offiziellen Image [`postgis/postgis:17-3.6`](https://hub.docker.com/r/postgis/postgis) (Debian trixie).
+Basiert auf dem offiziellen Image [`postgres:14.25-trixie`](https://hub.docker.com/_/postgres). PostGIS 3.1.13 wird im Image aus dem Quellcode gebaut, weil es für PG 14 keine 3.1-Pakete mehr gibt (PGDG liefert nur 3.6/3.7, `postgis/postgis:14-3.1` ist seit 2021 nicht mehr aktualisiert). Die PostGIS-Pakete aus apt sind per Pin gesperrt.
+
+Für Kunden, die auf PG 14 / PostGIS 3.1 bleiben müssen. PG 14 ist ab November 2026 End of Life, PostGIS 3.1 ebenfalls ohne Updates. `address_standardizer` fehlt (braucht PCRE1, in trixie nicht mehr vorhanden).
 
 ## Enthaltene Erweiterungen
 
@@ -75,7 +77,7 @@ docker network create kvwmap_prod
 POSTGRES_PASSWORD=geheimes_passwort
 POSTGRES_KVWMAP_PASSWORD=kvwmap_passwort
 NETWORK_NAME=kvwmap_prod
-SERVICE_NAME=pgsql17
+SERVICE_NAME=pgsql14
 ```
 
 Auf den GDI-Servern übernimmt das die Rolle `pgsql-container` in
@@ -165,12 +167,13 @@ Auf den GDI-Servern erledigt das die Rolle `pgsql-container` in server-konfig, e
 
 Restore nur aus repo2: `pgbackrest --stanza=local --repo=2 restore`.
 
-### Umstieg von postgis 17-3.5 (bullseye)
+### Umstieg von älterem 14 / PostGIS 3.1 (z. B. `postgis/postgis:14-3.1`, bullseye)
 
-Das Basis-Image wechselt von bullseye auf trixie. Bestehende Datenverzeichnisse funktionieren weiter (gleiches PostgreSQL-Major), es sind aber zwei Schritte nötig:
+Bestehende Datenverzeichnisse funktionieren weiter (gleiches PostgreSQL-Major, Minor-Update auf 14.25):
 
-- **Collation:** Die glibc ändert sich von 2.31 auf 2.41. Textindizes mit `de_DE` müssen neu gebaut werden (`REINDEX`), danach pro Datenbank `ALTER DATABASE … REFRESH COLLATION VERSION`.
-- **PostGIS 3.5 → 3.6:** in jeder Datenbank mit PostGIS `ALTER EXTENSION postgis UPDATE` ausführen, ebenso für weitere PostGIS-Extensions.
+- **Collation:** glibc wechselt von 2.31 (bullseye) auf 2.41 (trixie). Textindizes mit `de_DE` müssen neu gebaut werden (`REINDEX`). `REFRESH COLLATION VERSION` gibt es pro Datenbank erst ab PG 15, unter 14 nur pro Collation (`ALTER COLLATION … REFRESH VERSION`).
+- **PostGIS 3.1.x → 3.1.13:** in jeder Datenbank mit PostGIS `SELECT postgis_extensions_upgrade();` ausführen.
+- `GRANT SET ON PARAMETER` gibt es erst ab PG 15, `kvwmap` kann `log_min_messages` daher nicht selbst setzen.
 
 ## Log-Wartung
 

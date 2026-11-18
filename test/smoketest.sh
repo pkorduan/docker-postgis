@@ -48,8 +48,8 @@ sql() {  # sql db sql [user] [passwort]
 ex() { docker exec -e PGPASSWORD=$PW "$NAME" "$@"; }  # Prod: Passwort aus gemounteter .pgpass
 
 echo "--- Image"
-check "PostGIS ist 3.6 (apt-mark hold)" sql postgres "DO \$\$BEGIN ASSERT (SELECT default_version FROM pg_available_extensions WHERE name='postgis') LIKE '3.6%'; END\$\$"
-check "alle .so in pkglibdir auflösbar" bash -c "! docker exec $NAME sh -c 'ldd /usr/lib/postgresql/17/lib/*.so' | grep 'not found'"
+check "PostGIS ist 3.1 (aus Quellcode)" sql postgres "DO \$\$BEGIN ASSERT (SELECT default_version FROM pg_available_extensions WHERE name='postgis') LIKE '3.1%'; END\$\$"
+check "alle .so in pkglibdir auflösbar" bash -c "! docker exec $NAME sh -c 'ldd /usr/lib/postgresql/14/lib/*.so' | grep 'not found'"
 check "pgBackRest kann SFTP (libssh2)" bash -c "docker exec $NAME pgbackrest help backup repo-type | grep -q sftp"
 check "Locale/Zeitzone" sql postgres "DO \$\$BEGIN ASSERT current_setting('lc_time')='de_DE.utf8'; ASSERT current_setting('TimeZone')='Europe/Berlin'; END\$\$"
 
@@ -64,7 +64,7 @@ echo "--- Extensions funktional"
 check "postgis: Transformation 4326 -> 25833" sql smoke "DO \$\$BEGIN ASSERT ST_X(ST_Transform(ST_SetSRID(ST_MakePoint(12.1,54.1),4326),25833)) BETWEEN 300000 AND 400000; END\$\$"
 check "postgis_raster" sql smoke "SELECT ST_Width(ST_AddBand(ST_MakeEmptyRaster(10,10,0,0,1),'8BUI'::text))"
 check "postgis_topology" sql smoke "SELECT topology.CreateTopology('smoke_topo',25833)"
-check "postgis_sfcgal" sql smoke "SELECT ST_Volume(CG_Extrude(ST_GeomFromText('POLYGON((0 0,1 0,1 1,0 1,0 0))'),0,0,1))"
+check "postgis_sfcgal" sql smoke "SELECT ST_Volume(ST_Extrude(ST_GeomFromText('POLYGON((0 0,1 0,1 1,0 1,0 0))'),0,0,1))"
 check "postgis_tiger_geocoder" sql smoke "SELECT normalize_address('1 Main St, Boston, MA 02101')"
 check "pgrouting: Dijkstra" sql smoke "DO \$\$BEGIN ASSERT (SELECT max(agg_cost) FROM pgr_dijkstra('SELECT * FROM (VALUES (1,1,2,1.0,1.0),(2,2,3,2.0,2.0)) e(id,source,target,cost,reverse_cost)',1,3)) = 3; END\$\$"
 check "pgcrypto" sql smoke "DO \$\$BEGIN ASSERT crypt('x', gen_salt('bf')) LIKE '\$2a\$%'; END\$\$"
