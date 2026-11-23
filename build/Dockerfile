@@ -55,6 +55,11 @@ RUN set -eux; \
     ./configure --with-sfcgal; \
     make -j"$(nproc)"; \
     make install; \
+    # Tiger-Skripte: seit PG 14.5 (CVE-2022-2625) bricht CREATE SCHEMA IF NOT EXISTS im Extension-Skript ab,
+    # wenn tiger_data schon existiert (Restore eines Dumps aus <= 3.1.x) -> Schema nur anlegen, wenn es fehlt
+    sed -i "s/CREATE SCHEMA IF NOT EXISTS tiger_data;/IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_namespace WHERE nspname = 'tiger_data') THEN CREATE SCHEMA tiger_data; END IF;/" \
+        /usr/share/postgresql/14/extension/postgis_tiger_geocoder--*.sql; \
+    grep -q 'CREATE SCHEMA IF NOT EXISTS tiger_data' /usr/share/postgresql/14/extension/postgis_tiger_geocoder--*.sql && exit 1; \
     cd /; rm -rf "/tmp/postgis-${POSTGIS_VERSION}"
 
 # pgRouting-Paket aus PGDG hängt am Paket-PostGIS und ist 4.x (viele Funktionen entfernt) -> letztes 3.x selbst bauen

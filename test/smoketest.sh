@@ -66,6 +66,9 @@ check "postgis_raster" sql smoke "SELECT ST_Width(ST_AddBand(ST_MakeEmptyRaster(
 check "postgis_topology" sql smoke "SELECT topology.CreateTopology('smoke_topo',25833)"
 check "postgis_sfcgal" sql smoke "SELECT ST_Volume(ST_Extrude(ST_GeomFromText('POLYGON((0 0,1 0,1 1,0 1,0 0))'),0,0,1))"
 check "postgis_tiger_geocoder" sql smoke "SELECT normalize_address('1 Main St, Boston, MA 02101')"
+# Reihenfolge wie im Dump aus 3.1.x: Schemas vor CREATE EXTENSION (CVE-2022-2625-Fix in PG bricht sonst ab)
+sql postgres "CREATE DATABASE tigerrestore" >/dev/null
+check "postgis_tiger_geocoder: Restore mit vorhandenem tiger_data" sql tigerrestore "CREATE SCHEMA tiger; CREATE SCHEMA tiger_data; CREATE EXTENSION postgis_tiger_geocoder WITH SCHEMA tiger CASCADE"
 check "pgrouting: Dijkstra" sql smoke "DO \$\$BEGIN ASSERT (SELECT max(agg_cost) FROM pgr_dijkstra('SELECT * FROM (VALUES (1,1,2,1.0,1.0),(2,2,3,2.0,2.0)) e(id,source,target,cost,reverse_cost)',1,3)) = 3; END\$\$"
 check "pgcrypto" sql smoke "DO \$\$BEGIN ASSERT crypt('x', gen_salt('bf')) LIKE '\$2a\$%'; END\$\$"
 check "oracle_fdw: Instant Client lädt" sql smoke "SELECT oracle_diag()"
